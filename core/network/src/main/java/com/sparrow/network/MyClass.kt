@@ -1,4 +1,9 @@
 package com.sparrow.network
 
-class MyClass {
+
+fun main() {
+
+    //check for kotlin serialization
+
+    print("This is crazy part bro")
 }
