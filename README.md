@@ -8,7 +8,3 @@
     - Room Database
     - CI/CD Pipeline
     - Benchmark
-
-# Started With Network Layer
-
-GC
