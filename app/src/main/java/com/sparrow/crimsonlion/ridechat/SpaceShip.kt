@@ -36,22 +36,7 @@ fun AndroidAlien(
 
 @Composable
 fun AndroidAliensGameOverBox() {
-    Box (modifier = Modifier.fillMaxSize(),
-        contentAlinment = Alignment.Center,
 
-        ) {
-        AndroidAliensRows()
-        Text(
-            text = "Game Over",
-            style = TextStyle(
-                color = Color.White,
-                fontSize = 88.sp
-            ),
-            color = Color.Red,
-            modifier = Modifier.align(Alignment.CenterEnd)
-            
-        )
-    }
 }
 
 
