@@ -15,7 +15,5 @@ fun Card(
 @Preview
 @Composable
 fun CardPreview() {
-        Card {
 
-        }
 }

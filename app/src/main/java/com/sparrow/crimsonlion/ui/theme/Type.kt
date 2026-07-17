@@ -21,7 +21,6 @@ val Typography = Typography(
     )
 )
 
-
 val provider = GoogleFont.Provider(
     providerAuthority = "com.google.android.gms.fonts",
     providerPackage = "com.google.android.gms",
