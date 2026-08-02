@@ -7,7 +7,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 
 @Composable
-fun RideChatAlertDialog(onDismiss: () -> Unit) {
+fun FunctionalityNotAvailablePopup(onDismiss: () -> Unit) {
   AlertDialog(
     onDismissRequest = onDismiss,
     text = {
