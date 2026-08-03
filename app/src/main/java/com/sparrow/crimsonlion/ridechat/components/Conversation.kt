@@ -1,11 +1,23 @@
 package com.sparrow.crimsonlion.ridechat.components
 
+import android.content.ClipDescription
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.draganddrop.dragAndDropTarget
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.exclude
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -20,10 +32,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draganddrop.DragAndDropEvent
 import androidx.compose.ui.draganddrop.DragAndDropTarget
+import androidx.compose.ui.draganddrop.mimeTypes
 import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.sparrow.crimsonlion.R
 import com.sparrow.crimsonlion.ridechat.converstation.ConversationUiState
 import com.sparrow.crimsonlion.ridechat.converstation.Message
@@ -95,13 +110,39 @@ fun ConversationContent(
         }
     }
 
+    Scaffold(
+        topBar = {
+            ChannelNameBar(
+                channelName = uiState.channelName,
+                channelMembers = uiState.channelMembers,
+                onNaveIconPressed = onNaveIconPressed,
+                scrollBehaviour = scrollBehavior
+            )
+        },
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsets
+            .exclude(WindowInsets.navigationBars)
+            .exclude(WindowInsets.ime),
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+    ) { paddingValues ->
+        Column(
+            Modifier.fillMaxSize().padding(paddingValues)
+                .background(color = background)
+                .border(width = 2.dp, color = borderStroke)
+                .dragAndDropTarget(shouldStartDragAndDrop = {event ->
+                    event.mimeTypes().contains(ClipDescription.MIMETYPE_TEXT_PLAIN)
+                }, target = dragAndDropCallback)
+        ) {
+
+        }
+    }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChannelNameBar(
   channelName: String,
-  channelMembers: String,
+  channelMembers: Int,
   modifier: Modifier = Modifier,
   scrollBehaviour: TopAppBarScrollBehavior? = null,
   onNaveIconPressed: () -> Unit = {},
