@@ -21,6 +21,12 @@ import com.sparrow.crimsonlion.ridechat.dialog.FunctionalityNotAvailablePopup
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun ConversationContent() {
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun ChannelNameBar(
   channelName: String,
   channelMembers: String,
