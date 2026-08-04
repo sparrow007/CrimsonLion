@@ -17,8 +17,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -27,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LastBaseline
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -68,7 +71,13 @@ fun Messages(messages: List<Message>, navigateToProfile: (String) -> Unit, scrol
                 }
 
                 item {
-
+                    Message(
+                        onAuthorClick = { name -> navigateToProfile(name)},
+                        msg = content,
+                        isUserMe = content.author == authorMe,
+                        isFirstMessageByAuthor = isFirstMessageByAuthor,
+                        isLastMessageByAuthor = isLastMessageByAuthor
+                    )
                 }
             }
         }
@@ -127,6 +136,33 @@ fun AuthorAndTExtMessage(
             AuthorNameTimestamp(msg)
         }
     }
+}
+
+private val ChatBubbleShape = RoundedCornerShape(4.dp, 20.dp, 20.dp, 20.dp)
+
+@Composable
+fun ChatItemBubble(message: Message, isUserMe: Boolean, authorClicked: (String) -> Unit) {
+    val backgroundBubbleColor = if (isUserMe) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+
+    Column {
+        Surface(
+            color = backgroundBubbleColor,
+            shape = ChatBubbleShape
+        ) {
+
+        }
+    }
+}
+
+@Composable
+fun ClickableMessage(message: Message, isUserMe: Boolean, authorClicked: (String) -> Unit) {
+    val uriHandler = LocalUriHandler.current
+
+    val styleMessage =
 }
 
 @Composable
