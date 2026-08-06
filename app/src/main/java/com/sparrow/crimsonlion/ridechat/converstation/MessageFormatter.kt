@@ -45,6 +45,7 @@ fun messageFormatter(text: String, primary: Boolean): AnnotatedString {
     }
 }
 
+//Last staart from here
 private fun getSymbolAnnotation(
     matchResult: MatchResult,
     colorScheme: ColorScheme,
