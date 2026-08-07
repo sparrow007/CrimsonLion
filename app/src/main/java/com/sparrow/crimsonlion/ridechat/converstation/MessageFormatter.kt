@@ -70,6 +70,5 @@ private fun getSymbolAnnotation(
             ),
         )
     }
-
 }
 
