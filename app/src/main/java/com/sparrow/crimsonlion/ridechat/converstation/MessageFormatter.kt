@@ -67,7 +67,7 @@ private fun getSymbolAnnotation(
                 start = matchResult.range.first,
                 end = matchResult.range.last,
                 tag = SymbolAnnotationType.PERSON.name,
-            ),
+            )
         )
     }
 }
