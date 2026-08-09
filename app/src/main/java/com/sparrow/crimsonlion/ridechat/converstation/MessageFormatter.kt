@@ -7,7 +7,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.BaselineShift
+import androidx.compose.ui.unit.sp
 
 
 val symbolPattern by lazy {
@@ -40,35 +44,103 @@ fun messageFormatter(text: String, primary: Boolean): AnnotatedString {
         for (token in tokens) {
             append(text.slice(cursorPosition until token.range.first))
 
-            val (annotatedString, stringAnnotation = )
+            val (annotatedString, stringAnnotation)  = getSymbolAnnotation(
+                matchResult = token,
+                colorScheme = MaterialTheme.colorScheme,
+                primary = primary,
+                codeSnippetBackground = codeSnippetBackground
+            )
+            append(annotatedString)
+
+            if (stringAnnotation != null) {
+                addStringAnnotation(
+                    tag = stringAnnotation.tag,
+                    end = stringAnnotation.end,
+                    start = stringAnnotation.start,
+                    annotation = stringAnnotation.item
+                )
+            }
+            cursorPosition += token.range.last + 1
+        }
+
+        if (!tokens.none()) {
+            append(text.slice(cursorPosition..text.lastIndex))
+        } else {
+            append(text)
         }
     }
 }
 
-//Last staart from here
+//Last start from here
 private fun getSymbolAnnotation(
     matchResult: MatchResult,
     colorScheme: ColorScheme,
     primary: Boolean,
     codeSnippetBackground: Color,
 ): SymbolAnnotation {
-
+    val annotatedText = matchResult.value
     return when (matchResult.value.first()) {
         '@' -> SymbolAnnotation(
             AnnotatedString(
-                text = matchResult.value,
+                text = annotatedText,
                 spanStyle = SpanStyle(
                     color = if (primary) colorScheme.inversePrimary else colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
             ),
             StringAnnotation(
-                item = matchResult.value.substring(1),
+                item = annotatedText.substring(1),
                 start = matchResult.range.first,
                 end = matchResult.range.last,
                 tag = SymbolAnnotationType.PERSON.name,
             )
         )
+
+        '*' -> SymbolAnnotation(
+            AnnotatedString(
+                text =  annotatedText,
+                spanStyle = SpanStyle(
+                    fontWeight = FontWeight.Bold
+                )
+            ),
+                null
+            )
+
+        '_' -> SymbolAnnotation(
+            AnnotatedString(
+                text =   annotatedText,
+                spanStyle = SpanStyle(fontStyle = FontStyle.Italic)
+            ),
+            null
+        )
+
+        '`' -> SymbolAnnotation(
+            AnnotatedString(
+                text = annotatedText.trim('`'),
+                spanStyle = SpanStyle(
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 12.sp,
+                    background = codeSnippetBackground,
+                    baselineShift = BaselineShift(0.2f)
+                )
+            ), null
+           )
+        'h' -> SymbolAnnotation(
+            AnnotatedString(
+                text = annotatedText,
+                spanStyle = SpanStyle(
+                    color = if(primary) colorScheme.inversePrimary else colorScheme.primary
+                )
+            ), StringAnnotation(
+                item = annotatedText,
+                start = matchResult.range.first,
+                end = matchResult.range.last,
+                tag = SymbolAnnotationType.LINK.name
+            )
+        )
+
+        else -> SymbolAnnotation(AnnotatedString(text = annotatedText), null)
+
     }
 }
 
