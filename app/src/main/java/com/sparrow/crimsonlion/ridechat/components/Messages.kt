@@ -18,7 +18,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -37,21 +39,25 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.sparrow.crimsonlion.R
 import com.sparrow.crimsonlion.ridechat.converstation.Message
+import com.sparrow.crimsonlion.ridechat.converstation.SymbolAnnotationType
+import com.sparrow.crimsonlion.ridechat.converstation.messageFormatter
 
 const val ConversationTestTag = "ConversationTestTag"
 
-
 @Composable
-fun Messages(messages: List<Message>, navigateToProfile: (String) -> Unit, scrollState: LazyListState, modifier: Modifier = Modifier) {
+fun Messages(
+    messages: List<Message>,
+    navigateToProfile: (String) -> Unit,
+    scrollState: LazyListState,
+    modifier: Modifier = Modifier,
+) {
     val scope = rememberCoroutineScope()
     Box(modifier = modifier) {
         val authorMe = stringResource(R.string.author_me)
         LazyColumn(
             reverseLayout = true,
             state = scrollState,
-            modifier = Modifier
-                .testTag(ConversationTestTag)
-                .fillMaxSize()
+            modifier = Modifier.testTag(ConversationTestTag).fillMaxSize(),
         ) {
             for (index in messages.indices) {
                 val prevAuthor = messages.getOrNull(index - 1)?.author
@@ -61,22 +67,18 @@ fun Messages(messages: List<Message>, navigateToProfile: (String) -> Unit, scrol
                 val isLastMessageByAuthor = nextAuthor != content.author
 
                 if (index == messages.size - 1) {
-                    item {
-                        DayHeader("20 Aug")
-                    }
+                    item { DayHeader("20 Aug") }
                 } else if (index == 2) {
-                    item {
-                        DayHeader("Today")
-                    }
+                    item { DayHeader("Today") }
                 }
 
                 item {
                     Message(
-                        onAuthorClick = { name -> navigateToProfile(name)},
+                        onAuthorClick = { name -> navigateToProfile(name) },
                         msg = content,
                         isUserMe = content.author == authorMe,
                         isFirstMessageByAuthor = isFirstMessageByAuthor,
-                        isLastMessageByAuthor = isLastMessageByAuthor
+                        isLastMessageByAuthor = isLastMessageByAuthor,
                     )
                 }
             }
@@ -90,35 +92,34 @@ fun Message(
     msg: Message,
     isUserMe: Boolean,
     isFirstMessageByAuthor: Boolean,
-    isLastMessageByAuthor: Boolean
+    isLastMessageByAuthor: Boolean,
 ) {
-    val borderColor = if (isUserMe) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.tertiary
-    }
+    val borderColor =
+        if (isUserMe) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.tertiary
+        }
 
     val spaceBetweenAuthors = if (isLastMessageByAuthor) Modifier.padding(top = 8.dp) else Modifier
-    Row (modifier = spaceBetweenAuthors) {
+    Row(modifier = spaceBetweenAuthors) {
         if (isLastMessageByAuthor) {
             Image(
-                modifier = Modifier
-                    .clickable(onClick = {onAuthorClick(msg.author)})
-                    .padding(horizontal = 16.dp)
-                    .size(42.dp)
-                    .border(width = 1.5.dp, borderColor, CircleShape)
-                    .border(3.dp , MaterialTheme.colorScheme.surface, CircleShape)
-                    .clip(CircleShape)
-                    .align(Alignment.Top),
+                modifier =
+                    Modifier.clickable(onClick = { onAuthorClick(msg.author) })
+                        .padding(horizontal = 16.dp)
+                        .size(42.dp)
+                        .border(width = 1.5.dp, borderColor, CircleShape)
+                        .border(3.dp, MaterialTheme.colorScheme.surface, CircleShape)
+                        .clip(CircleShape)
+                        .align(Alignment.Top),
                 painter = painterResource(id = msg.authorImage),
                 contentScale = ContentScale.Crop,
-                contentDescription = null
+                contentDescription = null,
             )
         } else {
             Spacer(modifier = Modifier.width(74.dp))
         }
-
-
     }
 }
 
@@ -129,7 +130,7 @@ fun AuthorAndTExtMessage(
     isFirstMessageByAuthor: Boolean,
     isLastMessageByAuthor: Boolean,
     authorClicked: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
         if (isLastMessageByAuthor) {
@@ -142,61 +143,69 @@ private val ChatBubbleShape = RoundedCornerShape(4.dp, 20.dp, 20.dp, 20.dp)
 
 @Composable
 fun ChatItemBubble(message: Message, isUserMe: Boolean, authorClicked: (String) -> Unit) {
-    val backgroundBubbleColor = if (isUserMe) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.surfaceVariant
-    }
-
-    Column {
-        Surface(
-            color = backgroundBubbleColor,
-            shape = ChatBubbleShape
-        ) {
-
+    val backgroundBubbleColor =
+        if (isUserMe) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
         }
-    }
+
+    Column { Surface(color = backgroundBubbleColor, shape = ChatBubbleShape) {} }
 }
 
 @Composable
 fun ClickableMessage(message: Message, isUserMe: Boolean, authorClicked: (String) -> Unit) {
     val uriHandler = LocalUriHandler.current
 
-    val styleMessage =
+    val styleMessage = messageFormatter(text = message.content, primary = isUserMe)
+
+    ClickableText(
+        text = styleMessage,
+        style = MaterialTheme.typography.bodyLarge.copy(color = LocalContentColor.current),
+        modifier = Modifier.padding(all = 16.dp),
+        onClick = {
+            styleMessage.getStringAnnotations(it, it).firstOrNull()?.let { annotation ->
+                when (annotation.tag) {
+                    SymbolAnnotationType.PERSON.name -> {
+                        authorClicked(annotation.item)
+                    }
+                    SymbolAnnotationType.LINK.name -> {
+                        uriHandler.openUri(annotation.item)
+                    }
+                    else -> Unit
+                }
+            }
+        },
+    )
 }
 
 @Composable
 private fun AuthorNameTimestamp(msg: Message) {
-    Row (modifier = Modifier.semantics(mergeDescendants = true){}) {
+    Row(modifier = Modifier.semantics(mergeDescendants = true) {}) {
         Text(
             text = msg.author,
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier
-                .alignBy(LastBaseline)
-                .paddingFrom(LastBaseline, after = 8.dp)
+            modifier = Modifier.alignBy(LastBaseline).paddingFrom(LastBaseline, after = 8.dp),
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = msg.timestamp,
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.alignBy(LastBaseline),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
 
 @Composable
 fun DayHeader(dayString: String) {
-    Row (
-        modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)
-            .height(16.dp)
-    ) {
+    Row(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp).height(16.dp)) {
         DayHeaderLine()
         Text(
             text = dayString,
             modifier = Modifier.padding(horizontal = 16.dp),
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         DayHeaderLine()
     }
@@ -205,9 +214,7 @@ fun DayHeader(dayString: String) {
 @Composable
 fun RowScope.DayHeaderLine() {
     HorizontalDivider(
-        modifier = Modifier
-            .weight(1f)
-            .align(Alignment.CenterVertically),
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+        modifier = Modifier.weight(1f).align(Alignment.CenterVertically),
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
     )
 }
