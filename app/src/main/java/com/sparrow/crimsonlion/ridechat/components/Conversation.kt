@@ -132,6 +132,12 @@ fun ConversationContent(
                     event.mimeTypes().contains(ClipDescription.MIMETYPE_TEXT_PLAIN)
                 }, target = dragAndDropCallback)
         ) {
+            Messages(
+                messages = uiState.messages,
+                navigateToProfile = navigateToProfile,
+                modifier = Modifier.weight(1f),
+                scrollState = scrollState
+            )
 
         }
     }
